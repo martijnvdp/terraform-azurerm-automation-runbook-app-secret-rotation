@@ -43,13 +43,13 @@ module "rbac" {
       roles = {
         "Key Vault Secrets User" = {
           scopes = {
-            kv = module.rg.groups.main.id
+            kv = module.kv.vault.id
           }
         }
         # requires owner for adding the runbook runners public ip to the allow list of the kv
         "Owner" = {
           scopes = {
-            kv = module.rg.groups.main.id
+            kv = module.kv.vault.id
           }
         }
       }
@@ -69,8 +69,8 @@ module "client_secret_rotation" {
 
   keyvault_subscriptions = [
     {
-      name                = "existing_keyvault"
-      resource_group_name = "kv_resource_group"
+      name                = module.naming.key_vault.name_unique
+      resource_group_name = module.rg.groups.demo.name
     }
   ]
 }
