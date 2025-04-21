@@ -41,7 +41,7 @@ module "rbac" {
     (module.client_secret_rotation.automation_account_name) = {
       type = "ServicePrincipal"
       roles = {
-        "Key Vault Secrets User" = {
+        "Key Vault Secrets Officer" = {
           scopes = {
             kv = module.kv.vault.id
           }
