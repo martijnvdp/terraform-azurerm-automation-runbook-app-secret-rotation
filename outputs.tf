@@ -6,5 +6,5 @@ output "webhook_endpoint" {
 
 output "automation_account_name" {
   description = "automation account"
-  value       = module.naming.automation_account.name
+  value       = local.automation_account_name
 }

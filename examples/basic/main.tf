@@ -43,13 +43,13 @@ module "rbac" {
       roles = {
         "Key Vault Secrets Officer" = {
           scopes = {
-            kv = module.kv.vault.id
+            kv = module.rg.groups.main.id
           }
         }
         # requires owner for adding the runbook runners public ip to the allow list of the kv
         "Owner" = {
           scopes = {
-            kv = module.kv.vault.id
+            kv = module.rg.groups.main.id
           }
         }
       }
@@ -64,19 +64,20 @@ module "client_secret_rotation" {
   resource_group_id   = module.rg.groups.demo.id
   resource_group_name = module.rg.groups.demo.name
   location            = "location"
-  location_code       = "eu"
+  location_code       = "weu"
   workload            = "myworkloadname"
 
-  keyvault_subscriptions = [
+  keyvaults = [
     {
-      name                = module.naming.key_vault.name_unique
-      resource_group_name = module.rg.groups.demo.name
+      id   = module.naming.key_vault.id
+      name = module.naming.key_vault.name_unique
     }
   ]
 }
 
 resource "azurerm_key_vault_secret" "default" {
   name         = "my_rotating_secret"
+  content_type = "password"
   value        = ""
   key_vault_id = module.kv.vault.id
 

@@ -28,7 +28,7 @@ function set-password {
     Write-Output "New client secret created for entra id application"
     $secretSecureString = ConvertTo-SecureString -String $newPassword.SecretText -AsPlainText -Force
     $existingSecret = Get-AzKeyVaultSecret -VaultName $vaultName -Name $secretName
-    $result = Set-AzKeyVaultSecret -VaultName $vaultName -Name $secretName -SecretValue $secretSecureString -Expires $Expires -Tag $existingSecret.Tags
+    $result = Set-AzKeyVaultSecret -VaultName $vaultName -Name $secretName -ContentType "password" -SecretValue $secretSecureString -Expires $Expires -Tag $existingSecret.Tags
     Write-Output "New client secret stored in key vault: $vaultName item $secretName at $($result.created)"
 }
 

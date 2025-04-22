@@ -5,13 +5,13 @@ module "eventgrid" {
   naming = local.naming
 
   config = {
-    name           = module.naming.eventgrid_domain.name
+    name           = "${module.naming.eventgrid_domain.name}-${var.name_suffix}"
     resource_group = var.resource_group_name
     location       = var.location
 
     event_subscriptions = {
-      for kv in var.keyvault_subscriptions : ("keyvault-${kv.name}-events") => {
-        scope                 = data.azurerm_key_vault.default[kv.name].id
+      for kv in var.keyvaults : ("${kv.name}-${var.name_suffix}") => {
+        scope                 = kv.id
         event_delivery_schema = "EventGridSchema"
 
         included_event_types = [
