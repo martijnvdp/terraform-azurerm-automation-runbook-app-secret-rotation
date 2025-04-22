@@ -5,7 +5,7 @@ module "runbooks" {
   naming             = local.naming
   resource_group     = var.resource_group_name
   location           = var.location
-  automation_account = module.naming.automation_account.name
+  automation_account = local.automation_account_name
 
   config = {
     az-aa-client-secret-rotation = {

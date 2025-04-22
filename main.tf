@@ -19,13 +19,6 @@ locals {
 data "azuread_application_published_app_ids" "well_known" {
 }
 
-data "azurerm_key_vault" "default" {
-  for_each = { for kv in var.keyvault_subscriptions : kv.name => kv }
-
-  name                = each.key
-  resource_group_name = each.value.resource_group_name
-}
-
 data "azuread_service_principal" "msgraph" {
   client_id = data.azuread_application_published_app_ids.well_known.result["MicrosoftGraph"]
 }

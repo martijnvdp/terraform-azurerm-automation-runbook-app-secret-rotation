@@ -1,3 +1,7 @@
+locals {
+  automation_account_name = "${module.naming.automation_account.name}-${var.name_suffix}"
+}
+
 resource "azuread_app_role_assignment" "app_role_assignment" {
   app_role_id         = data.azuread_service_principal.msgraph.app_role_ids["Application.ReadWrite.All"]
   principal_object_id = module.automation_account.config.identity[0].principal_id
@@ -9,7 +13,7 @@ module "automation_account" {
   version = "~> 2.6"
 
   config = {
-    name           = module.naming.automation_account.name
+    name           = local.automation_account_name
     resource_group = var.resource_group_name
     location       = var.location
 

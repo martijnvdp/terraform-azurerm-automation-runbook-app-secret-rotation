@@ -3,10 +3,10 @@ variable "environment" {
   description = "environment"
 }
 
-variable "keyvault_subscriptions" {
+variable "keyvaults" {
   type = list(object({
-    name                = string
-    resource_group_name = string
+    name = string
+    id   = string
   }))
   description = "list of keyvaults to add to the eventgrid subscription"
   default     = []
@@ -20,6 +20,12 @@ variable "location" {
 variable "location_code" {
   type        = string
   description = "location code"
+}
+
+variable "name_suffix" {
+  type        = string
+  description = "name suffix"
+  default     = "asr-rb"
 }
 
 variable "resource_group_id" {
@@ -40,7 +46,7 @@ variable "tags" {
 
 variable "webhook_expiration_end_year" {
   type        = number
-  description = "webhook expiration year"
+  description = "webhook expiration in years"
   default     = 2027
 }
 
