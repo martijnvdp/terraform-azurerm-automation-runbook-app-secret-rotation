@@ -1,3 +1,13 @@
+variable "automation_operators" {
+  type = map(object({
+    type      = string
+    client_id = optional(string, null)
+    object_id = optional(string, null)
+  }))
+  description = "map with operators for the runbook and automation account"
+  default     = {}
+}
+
 variable "environment" {
   type        = string
   description = "environment"

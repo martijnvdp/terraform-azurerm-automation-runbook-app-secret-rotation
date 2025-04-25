@@ -25,3 +25,29 @@ module "runbooks" {
   depends_on = [module.automation_account]
 }
 
+module "rbac" {
+  source  = "cloudnationhq/rbac/azure"
+  version = "~> 2.2.0"
+
+  role_assignments = {
+    for name, properties in var.automation_operators : name => {
+      client_id    = try(properties.client_id, null)
+      display_name = name
+      object_id    = try(properties.object_id, null)
+      type         = title(properties.type)
+      upn          = name
+      roles = {
+        "Automation Job Operator" = {
+          scopes = {
+            aa = module.automation_account.config.id
+          }
+        }
+        "Automation Runbook Operator" = {
+          scopes = {
+            rb = module.runbooks.runbook["az-aa-client-secret-rotation"].id
+          }
+        }
+      }
+    }
+  }
+}
