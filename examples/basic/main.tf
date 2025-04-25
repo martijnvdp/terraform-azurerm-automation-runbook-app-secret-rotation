@@ -67,6 +67,11 @@ module "client_secret_rotation" {
   location_code       = "weu"
   workload            = "myworkloadname"
 
+  automation_operators = {
+    "AUTOMATION_OPERATORS_GROUP" = {
+      type = "Group"
+    }
+  }
   keyvaults = [
     {
       id   = module.naming.key_vault.id
@@ -76,10 +81,11 @@ module "client_secret_rotation" {
 }
 
 resource "azurerm_key_vault_secret" "default" {
-  name         = "my_rotating_secret"
-  content_type = "password"
-  value        = ""
-  key_vault_id = module.kv.vault.id
+  name            = "my_rotating_secret"
+  content_type    = "password"
+  expiration_date = timeadd(timestamp(), "24h")
+  key_vault_id    = module.kv.vault.id
+  value           = ""
 
   tags = {
     "az_aa_client_secret_rotation.app_name"                   = "AZURE_APPLICATION_NAME_TO_ROTATE_CLIENT_SECRET"
