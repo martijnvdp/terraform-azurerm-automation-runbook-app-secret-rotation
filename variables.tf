@@ -4,7 +4,7 @@ variable "automation_operators" {
     client_id = optional(string, null)
     object_id = optional(string, null)
   }))
-  description = "map with operators for the runbook and automation account"
+  description = "map with operators for the runbook and automation account."
   default     = {}
 }
 
@@ -18,7 +18,7 @@ variable "keyvaults" {
     name = string
     id   = string
   }))
-  description = "list of keyvaults to add to the eventgrid subscription"
+  description = "list of keyvaults to add to the eventgrid subscription."
   default     = []
 }
 
