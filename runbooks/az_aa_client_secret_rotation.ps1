@@ -2,20 +2,19 @@ param
 (
     [Parameter (Mandatory = $false)]
     [object] $WebhookData,
-    $clientSecretDisplayName = "created_by_az_aa_client_secret_rotation",
-    $deleteClientSecret,
+    [string]$clientSecretDisplayName = "created_by_az_aa_client_secret_rotation",
+    [string]$deleteClientSecret,
     [int]$keepExistingClientSecrets = 1,
-    $eventType = "manual",
-    $secretName,
-    $vaultName
+    [string]$eventType = "manual",
+    [string]$secretName,
+    [string]$vaultName
 )
-
 
 function remove-passwordCredentials {
     param
     (
-        $appID,
-        $passwordCredentials,
+        [string]$appID,
+        [string]$passwordCredentials,
         [int]$keepExistingClientSecrets = 1
     )
 
@@ -32,11 +31,11 @@ function remove-passwordCredentials {
 
 function set-password {
     param (
-        $appID,
-        $clientSecretDisplayName,
+        [string]$appID,
+        [string]$clientSecretDisplayName,
         [int]$expirationInDays,
-        $secretName,
-        $vaultName
+        [string]$secretName,
+        [string]$vaultName
     )
 
     $Expires = (Get-Date).AddDays($expirationInDays)
@@ -55,16 +54,16 @@ function set-password {
 
 function get-daysLeft {
     param (
-        $endDateTime
+        [datetime]$endDateTime
     )
     return ($endDateTime - (Get-Date)).Days
 }
 
 function add-ipToKeyvaultRule {
     param (
-        $pubIpSource = "ipinfo.io/ip",
-        $resourceGroupName,
-        $vaultName
+        [string]$pubIpSource = "ipinfo.io/ip",
+        [string]$resourceGroupName,
+        [string]$vaultName
     )
 
     $ipAddress = (Invoke-WebRequest -uri $PubIPSource -UseBasicParsing).content.TrimEnd()
@@ -79,9 +78,9 @@ function add-ipToKeyvaultRule {
 
 function remove-ipFromKeyVaultRule {
     param (
-        $ipAddress,
-        $resourceGroupName,
-        $vaultName
+        [string]$ipAddress,
+        [string]$resourceGroupName,
+        [string]$vaultName
     )
 
     if ($ipAddress) {
@@ -159,7 +158,12 @@ if ($eventType -match "Microsoft.KeyVault.SecretExpired|Microsoft.KeyVault.Secre
     if ($secret.tags["az_aa_client_secret_rotation.expiration_in_days"]) { $expirationInDays = $secret.tags["az_aa_client_secret_rotation.expiration_in_days"] }
     if ($secret.tags["az_aa_client_secret_rotation.client_secret_display_name"]) { $clientSecretDisplayName = $secret.tags["az_aa_client_secret_rotation.client_secret_display_name"] }
     Write-Output "[info] Processing: $($secret.name) for application: $appName"
-    $app = Get-MgApplication -Search "DisplayName:$appName" -ConsistencyLevel "eventual"
+    $app = Get-MgApplication -filter "displayName eq '$($appName)'"
+
+    if ( $($app | measure-object).count -ge 2) {
+        Write-Error "[error] Application: more than one app found with displayName $appName for $($secret.name)"
+        return
+    }
 
     if (!$app.Id ) {
         Write-Error "[error] Application: $appName not found for $($secret.name)"
