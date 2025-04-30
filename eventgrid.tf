@@ -6,8 +6,9 @@ module "eventgrid" {
 
   config = {
     name           = "${module.naming.eventgrid_domain.name}-${var.name_suffix}"
-    resource_group = var.resource_group_name
     location       = var.location
+    resource_group = var.resource_group_name
+    tags           = var.tags
 
     event_subscriptions = {
       for kv in var.keyvaults : ("${kv.name}-${var.name_suffix}") => {
