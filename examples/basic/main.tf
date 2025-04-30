@@ -92,6 +92,8 @@ resource "azurerm_key_vault_secret" "default" {
     "az_aa_client_secret_rotation.client_secret_display_name" = "auto_rotated_client_secret"
     "az_aa_client_secret_rotation.enabled"                    = "true"
     "az_aa_client_secret_rotation.expiration_in_days"         = "90"
+    "az_aa_client_secret_rotation.notification_recipients"    = "person1@mail.com,person2@mail.com"
+    "az_aa_client_secret_rotation.notification_sender"        = "existing_sender_mail@mail.com"
   }
 
   lifecycle {

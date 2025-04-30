@@ -2,10 +2,11 @@ module "runbooks" {
   source  = "cloudnationhq/aa/azure//modules/runbooks"
   version = "~> 2.6"
 
+  automation_account = local.automation_account_name
+  location           = var.location
   naming             = local.naming
   resource_group     = var.resource_group_name
-  location           = var.location
-  automation_account = local.automation_account_name
+  tags               = var.tags
 
   config = {
     az-aa-client-secret-rotation = {

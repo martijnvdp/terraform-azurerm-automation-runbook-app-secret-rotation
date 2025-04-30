@@ -2,10 +2,11 @@ param
 (
     [Parameter (Mandatory = $false)]
     [object] $WebhookData,
+    [int]$keepExistingClientSecrets = 1,
     [string]$clientSecretDisplayName = "created_by_az_aa_client_secret_rotation",
     [string]$deleteClientSecret,
-    [int]$keepExistingClientSecrets = 1,
     [string]$eventType = "manual",
+    [string]$notificationSender,
     [string]$secretName,
     [string]$vaultName
 )
@@ -13,9 +14,9 @@ param
 function remove-passwordCredentials {
     param
     (
+        [int]$keepExistingClientSecrets = 1,
         [string]$appID,
-        [string]$passwordCredentials,
-        [int]$keepExistingClientSecrets = 1
+        [object]$passwordCredentials
     )
 
     $passwordCount = $($passwordCredentials | Measure-Object).count
@@ -29,11 +30,46 @@ function remove-passwordCredentials {
     }
 }
 
+function send-changeNotification {
+    param (
+        [string]$appName,
+        [string]$daysLeft,
+        [string]$keyVault,
+        [string]$notificationSender,
+        [string]$recipients
+    )
+    Import-Module Microsoft.Graph.Users.Actions
+
+    $toRecipients = @()
+    foreach ($address in $recipients.Split(",")) {
+        $recipient = @{
+            EmailAddress = @{
+                Address = $address
+            }
+        }
+        $ToRecipients += $recipient
+    }
+
+    $params = @{
+        Message         = @{
+            Subject      = "Client secret has been automatically rotated for: $appName"
+            Body         = @{
+                ContentType = "Html"
+                Content     = "The Client secret for $appName has been rotated and the new value is stored in keyvault<br>keyvault name: $keyVault<br>The old secret will expire in $daysLeft days"
+            }
+            ToRecipients = $toRecipients
+        }
+        SaveToSentItems = "false"
+    }
+
+    Send-MgUserMail -UserId $notificationSender -BodyParameter $params
+}
+
 function set-password {
     param (
+        [int]$expirationInDays,
         [string]$appID,
         [string]$clientSecretDisplayName,
-        [int]$expirationInDays,
         [string]$secretName,
         [string]$vaultName
     )
@@ -117,8 +153,9 @@ if ($eventType -eq "manual" -and !$vaultName -or !$secretName) {
 
 if ($eventType -eq "Microsoft.KeyVault.SecretNewVersionCreated" -and $secretEXP) {
     $expirationDate = [System.DateTimeOffset]::FromUnixTimeSeconds($secretEXP).datetime
-    $daysLeft = ($expirationDate - (Get-Date).Date).Days
-    if ($daysLeft -ge 31 ) {
+    $daysLeft = get-daysLeft -endDateTime $expirationDate
+
+    if ($daysLeft -ge 30 ) {
         Write-Output "[info] skip secret from new secret version created event that already has an expiration date with $daysLeft remaining"
         return
     }
@@ -156,6 +193,8 @@ if ($eventType -match "Microsoft.KeyVault.SecretExpired|Microsoft.KeyVault.Secre
     }
     $deleteClientSecret = $( $deleteClientSecret ?? ($secret.tags["az_aa_client_secret_rotation.delete_client_secret"]))
     if ($secret.tags["az_aa_client_secret_rotation.expiration_in_days"]) { $expirationInDays = $secret.tags["az_aa_client_secret_rotation.expiration_in_days"] }
+    if ($secret.tags["az_aa_client_secret_rotation.notification_recipients"]) { $notificationRecipients = $secret.tags["az_aa_client_secret_rotation.notification_recipients"] }
+    if ($secret.tags["az_aa_client_secret_rotation.notification_sender"]) { $notificationSender = $secret.tags["az_aa_client_secret_rotation.notification_sender"] }
     if ($secret.tags["az_aa_client_secret_rotation.client_secret_display_name"]) { $clientSecretDisplayName = $secret.tags["az_aa_client_secret_rotation.client_secret_display_name"] }
     Write-Output "[info] Processing: $($secret.name) for application: $appName"
     $app = Get-MgApplication -filter "displayName eq '$($appName)'"
@@ -184,6 +223,9 @@ if ($eventType -match "Microsoft.KeyVault.SecretExpired|Microsoft.KeyVault.Secre
         Write-Output "[info] Creating new secret with display name $clientSecretDisplayName for $appName"
         set-password -clientSecretDisplayName $clientSecretDisplayName -appID $app.Id -expirationInDays $expirationInDays -vaultName $vault.VaultName -secretName $secret.name -clientAPPID $app.AppId
         Write-Output "[info] Secret $clientSecretDisplayName for $appName rotated and stored in vault $vaultname"
+        if ($notificationRecipients) {
+            send-changeNotification  -appName $appName -daysLeft $($daysLeft ?? 0) -keyVault $vaultName -notificationSender $notificationSender -recipients $notificationRecipients
+        }
         # remove automation ip from the keyvault allowed list
         remove-ipFromKeyVaultRule -ipAddress $publicIP -vaultName $vault.VaultName -resourceGroupName $vault.ResourceGroupName
         return
