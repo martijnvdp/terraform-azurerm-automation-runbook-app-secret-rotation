@@ -33,30 +33,6 @@ module "kv" {
   }
 }
 
-module "rbac" {
-  source  = "cloudnationhq/rbac/azure"
-  version = "~> 2.0"
-
-  role_assignments = {
-    (module.client_secret_rotation.automation_account_name) = {
-      type = "ServicePrincipal"
-      roles = {
-        "Key Vault Secrets Officer" = {
-          scopes = {
-            kv = module.rg.groups.main.id
-          }
-        }
-        # requires owner for adding the runbook runners public ip to the allow list of the kv
-        "Owner" = {
-          scopes = {
-            kv = module.rg.groups.main.id
-          }
-        }
-      }
-    }
-  }
-}
-
 module "client_secret_rotation" {
   source = "../../"
 

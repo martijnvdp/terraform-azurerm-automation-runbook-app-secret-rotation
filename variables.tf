@@ -1,10 +1,16 @@
+variable "automation_account_permissions" {
+  type        = list(string)
+  description = "Graph permissions for the automation account"
+  default     = ["Application.ReadWrite.All", "Mail.Send"]
+}
+
 variable "automation_operators" {
   type = map(object({
     type      = string
     client_id = optional(string, null)
     object_id = optional(string, null)
   }))
-  description = "map with operators for the runbook and automation account."
+  description = "map with operators for the runbook and automation account"
   default     = {}
 }
 
@@ -18,8 +24,14 @@ variable "keyvaults" {
     name = string
     id   = string
   }))
-  description = "list of keyvaults to add to the eventgrid subscription."
+  description = "list of keyvaults to add to the eventgrid subscription"
   default     = []
+}
+
+variable "keyvault_rbac_roles" {
+  type        = list(string)
+  description = "default required rbac roles to assign to the automation account"
+  default     = ["Owner", "Key Vault Secrets Officer"]
 }
 
 variable "location" {

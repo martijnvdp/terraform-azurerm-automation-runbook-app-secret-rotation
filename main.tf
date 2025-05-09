@@ -9,6 +9,7 @@ locals {
     "automation_account",
     "automation_runbook",
     "automation_schedule",
+    "automation_variable",
     "automation_webhook",
     "eventgrid_domain",
     "eventgrid_event_subscription",

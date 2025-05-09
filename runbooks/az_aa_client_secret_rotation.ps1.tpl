@@ -168,8 +168,9 @@ if ($eventType -match "Microsoft.KeyVault.SecretExpired|Microsoft.KeyVault.Secre
         return
     }
     # login with managed service principal
-    Connect-AzAccount -Identity
-    Connect-MgGraph -Identity -NoWelcome
+    $client_id = Get-AutomationVariable -Name "${uai_client_id_var_name}"
+    Connect-AzAccount -Identity -AccountId $client_id
+    Connect-MgGraph -Identity -ClientId $client_id -NoWelcome
     $vault = $(Get-AzKeyVault -VaultName $vaultName)
 
     if (!$vault) {

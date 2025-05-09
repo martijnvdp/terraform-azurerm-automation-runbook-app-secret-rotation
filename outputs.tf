@@ -6,5 +6,10 @@ output "webhook_endpoint" {
 
 output "automation_account_name" {
   description = "automation account"
-  value       = local.automation_account_name
+  value       = module.automation_account.config.name
+}
+
+output "user_assigned_identity" {
+  description = "user assigned identity name"
+  value       = azurerm_user_assigned_identity.default
 }
