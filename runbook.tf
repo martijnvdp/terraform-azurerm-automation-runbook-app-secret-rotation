@@ -2,7 +2,7 @@ module "runbooks" {
   source  = "cloudnationhq/aa/azure//modules/runbooks"
   version = "~> 2.6"
 
-  automation_account = local.automation_account_name
+  automation_account = module.automation_account.config.name
   location           = var.location
   naming             = local.naming
   resource_group     = var.resource_group_name
@@ -13,7 +13,9 @@ module "runbooks" {
       runbook_type = "PowerShell72"
       log_verbose  = false
       log_progress = true
-      content      = file("${path.module}/runbooks/az_aa_client_secret_rotation.ps1")
+      content = templatefile("${path.module}/runbooks/az_aa_client_secret_rotation.ps1.tpl", {
+        uai_client_id_var_name = local.uai_client_id_var_name
+      })
       webhooks = {
         event = {
           # using time date functions result in: The "for_each" map includes keys derived from resource attributes that cannot be determined until apply
@@ -22,8 +24,6 @@ module "runbooks" {
       }
     }
   }
-
-  depends_on = [module.automation_account]
 }
 
 module "rbac" {
@@ -37,6 +37,7 @@ module "rbac" {
       object_id    = try(properties.object_id, null)
       type         = title(properties.type)
       upn          = name
+
       roles = {
         "Automation Job Operator" = {
           scopes = {
