@@ -1,6 +1,6 @@
 # terraform-azurerm-automation-runbook-app-secret-rotation
 Terraform module to deploy an azure runbook for rotating azure application client secrets, triggered from keyvault expired secret grid events.
-and configarable with tags on azure keyvault secrets/
+and configarable with tags on azure keyvault secrets.
 
 ### High Level Design
 
@@ -22,6 +22,8 @@ the azure keyvault secret can be configured to autorotate with the following tag
     "az_aa_client_secret_rotation.client_secret_display_name" = "auto_rotated_client_secret"
     "az_aa_client_secret_rotation.enabled"                    = "true"
     "az_aa_client_secret_rotation.expiration_in_days"         = "90"
+    "az_aa_client_secret_rotation.notification_recipients"    = "person1@mail.com,person2@mail.com"
+    "az_aa_client_secret_rotation.notification_sender"        = "existing_sender_mail@mail.com"
 ```
 
 to cleanup  client secrets from an application the following tag can be used:
