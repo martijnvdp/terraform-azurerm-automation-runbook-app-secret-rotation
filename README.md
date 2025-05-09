@@ -1,5 +1,6 @@
 # terraform-azurerm-automation-runbook-app-secret-rotation
 Terraform module to deploy an azure runbook for rotating azure application client secrets, triggered from keyvault expired secret grid events.
+and configarable with tags on azure keyvault secrets/
 
 ### High Level Design
 
